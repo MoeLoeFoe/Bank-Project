@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from bankapp.models import Account, User  # Assuming User is the custom user model
+from bankapp.models import Account, User
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for user data related to accounts"""
@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
 class AccountSerializer(serializers.ModelSerializer):
     """Serializer for the account model."""
 
-    user = UserSerializer(read_only=True)  # Assuming each account belongs to a user
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Account

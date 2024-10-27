@@ -28,11 +28,11 @@ class PrivateLoanApiTests(TestCase):
 
         res = self.client.get(LOAN_URL)
 
-        loans = Loan.objects.all().order_by('-id')  # This returns loans in descending order of ID
+        loans = Loan.objects.all().order_by('-id')
         serializer = LoanSerializer(loans, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)  # This is now checking against the order specified
+        self.assertEqual(res.data, serializer.data)
 
     def test_create_loan(self):
         """Test creating a loan"""

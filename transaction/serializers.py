@@ -26,7 +26,7 @@ class TransactionSerializer(serializers.ModelSerializer):
         """Creates a transaction and updates account balances."""
         transaction = Transaction.objects.create(**validated_data)
 
-        # Update account balances based on transaction type
+
         if transaction.transaction_type == 'deposit':
             transaction.sender_account.balance += transaction.amount
         elif transaction.transaction_type == 'withdrawal':
@@ -35,7 +35,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             transaction.sender_account.balance -= transaction.amount
             transaction.receiver_account.balance += transaction.amount
 
-        # Save the accounts after updating the balances
+
         transaction.sender_account.save()
         transaction.receiver_account.save()
 

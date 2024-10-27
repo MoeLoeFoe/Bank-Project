@@ -15,7 +15,7 @@ class UserManager(BaseUserManager):
 
     def create_superuser(self, email, password, name=None):
         """Create and return a superuser with the given email and password."""
-        user = self.create_user(email, password, name=name)  # Pass the name to create_user
+        user = self.create_user(email, password, name=name)
         user.is_staff = True
         user.is_superuser = True
         user.save(using=self._db)
@@ -41,7 +41,7 @@ class Account(models.Model):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="accounts")
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    currency = models.CharField(max_length=3, default="NIS")  # For example, "NIS" for shekels
+    currency = models.CharField(max_length=3, default="NIS")
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -71,13 +71,13 @@ class Transaction(models.Model):
         'Account', related_name='received_transactions', null=True, blank=True, on_delete=models.CASCADE
     )
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)  # Define this field if missing
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.transaction_type.capitalize()} of {self.amount} on {self.created_at}"
 class Loan(models.Model):
-    account = models.ForeignKey('Account', on_delete=models.CASCADE, null=True)  # Reference to Account model
+    account = models.ForeignKey('Account', on_delete=models.CASCADE, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
     term_months = models.IntegerField()

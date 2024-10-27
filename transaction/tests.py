@@ -26,28 +26,27 @@ class PrivateTransactionApiTests(TestCase):
 
     def test_retrieve_transactions(self):
         """Test retrieving a list of transactions"""
-        # Create sender and receiver accounts
+
         sender_account = Account.objects.create(user=self.user, balance=1000)
         receiver_account = Account.objects.create(user=self.user, balance=500)
 
-        # Create transactions for the user
         Transaction.objects.create(sender_account=sender_account, receiver_account=receiver_account, amount=500,
                                    transaction_type='transfer')
         Transaction.objects.create(sender_account=sender_account, receiver_account=receiver_account, amount=200,
                                    transaction_type='transfer')
 
-        # Perform the GET request
+
         res = self.client.get(TRANSACTION_URL)
 
-        # Get the expected transactions for the user
+
         transactions = Transaction.objects.filter(
             Q(sender_account__user=self.user) | Q(receiver_account__user=self.user)
         ).order_by('-created_at')
 
-        # Serialize the expected transactions
+
         serializer = TransactionSerializer(transactions, many=True)
 
-        # Assert the response
+
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
@@ -61,15 +60,15 @@ class PrivateTransactionApiTests(TestCase):
 
     def test_create_withdrawal_transaction(self):
         """Test creating a withdrawal transaction"""
-        # Make sure to create or use existing accounts for the sender and receiver
+
         sender_account = Account.objects.create(user=self.user, balance=1000)
-        receiver_account = Account.objects.create(user=self.user, balance=500)  # Or a different user account
+        receiver_account = Account.objects.create(user=self.user, balance=500)
 
         payload = {
-            'amount': 200,  # Make sure this amount is valid for withdrawal
+            'amount': 200,
             'transaction_type': 'withdrawal',
-            'sender_account': sender_account.id,  # Add the sender account ID
-            'receiver_account': receiver_account.id,  # Add the receiver account ID
+            'sender_account': sender_account.id,
+            'receiver_account': receiver_account.id,
         }
 
         res = self.client.post(TRANSACTION_URL, payload)

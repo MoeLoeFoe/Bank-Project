@@ -17,15 +17,15 @@ class LoanViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Retrieve loans for authenticated user's accounts, ordered by created_at"""
         accounts = Account.objects.filter(user=self.request.user)
-        return self.queryset.filter(account__in=accounts).order_by('-start_date')  # Change to desired ordering
+        return self.queryset.filter(account__in=accounts).order_by('-start_date')
 
     def perform_create(self, serializer):
         """Create a new loan for the specified account"""
-        account_id = self.request.data.get('account_id')  # Get account_id from request data
+        account_id = self.request.data.get('account_id')
 
         try:
-            account = Account.objects.get(id=account_id, user=self.request.user)  # Validate account ownership
+            account = Account.objects.get(id=account_id, user=self.request.user)
         except Account.DoesNotExist:
             return Response({"detail": "Account not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer.save(account=account)  # Save the loan with the account
+        serializer.save(account=account)

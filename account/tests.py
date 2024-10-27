@@ -33,21 +33,14 @@ class PrivateAccountApiTests(TestCase):
 
     def test_retrieve_accounts(self):
         """Test retrieving a list of accounts"""
-        # Create two accounts for the user
+
         account1 = Account.objects.create(user=self.user, balance=500)
         account2 = Account.objects.create(user=self.user, balance=1000)
 
-        # Perform the GET request to retrieve accounts
         res = self.client.get(ACCOUNT_URL)
-
-        # Retrieve all accounts for comparison
         accounts = Account.objects.filter(user=self.user).order_by('id')  # Ensure to filter by user
         serializer = AccountSerializer(accounts, many=True)
-
-        # Assert that the status code is correct
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-
-        # Assert that the returned data matches the serialized data
         self.assertEqual(res.data, serializer.data)
 
     def test_accounts_limited_to_user(self):
