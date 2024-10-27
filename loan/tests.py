@@ -23,18 +23,19 @@ class PrivateLoanApiTests(TestCase):
 
     def test_retrieve_loans(self):
         """Test retrieving a list of loans"""
-        Loan.objects.create(account=self.account, amount=500, interest_rate=5.0, duration_months=12)
-        Loan.objects.create(account=self.account, amount=200, interest_rate=3.0, duration_months=6)
+        Loan.objects.create(account=self.account, amount=500, interest_rate=5.0, term_months=12)
+        Loan.objects.create(account=self.account, amount=200, interest_rate=3.0, term_months=6)
 
         res = self.client.get(LOAN_URL)
 
-        loans = Loan.objects.all().order_by('-id')
+        loans = Loan.objects.all().order_by('-id')  # This returns loans in descending order of ID
         serializer = LoanSerializer(loans, many=True)
+
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.data, serializer.data)  # This is now checking against the order specified
 
     def test_create_loan(self):
         """Test creating a loan"""
-        payload = {'amount': 1000, 'interest_rate': 4.5, 'duration_months': 24}
+        payload = {'amount': 1000, 'interest_rate': 4.5, 'term_months': 24}
         res = self.client.post(LOAN_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)

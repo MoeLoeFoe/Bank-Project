@@ -37,19 +37,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Account(models.Model):
-    ACCOUNT_TYPES = (
-        ('checking', 'Checking'),
-        ('savings', 'Savings'),
 
-    )
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="accounts")
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     currency = models.CharField(max_length=3, default="NIS")  # For example, "NIS" for shekels
-    account_type = models.CharField(max_length=50)  # e.g., "Checking", "Savings"
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.user.name} - {self.account_type} - {self.currency}"
+        return f"{self.user.name} - {self.currency}"
 
     def deposit(self, amount):
         self.balance += amount
@@ -81,7 +76,7 @@ class Transaction(models.Model):
     def __str__(self):
         return f"{self.transaction_type.capitalize()} of {self.amount} on {self.created_at}"
 class Loan(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    account = models.ForeignKey('Account', on_delete=models.CASCADE, null=True)  # Reference to Account model
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
     term_months = models.IntegerField()
@@ -89,5 +84,5 @@ class Loan(models.Model):
     paid_off = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.user.name} - {self.amount} at {self.interest_rate}%"
+        return f"{self.account.user.name} - {self.amount} at {self.interest_rate}%"
 
