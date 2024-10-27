@@ -2,73 +2,92 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
-
-class CustomUserManager(BaseUserManager):
+from bankproject import settings
+class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
-        """Create and save a regular user with the given email and password."""
         if not email:
-            raise ValueError('Users must have an email address')
+            raise ValueError('User must have an email address')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password=None, **extra_fields):
-        """Create and save a superuser with the given email and password."""
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
-
-        return self.create_user(email, password, **extra_fields)
-
+    def create_superuser(self, email, password):
+        user = self.create_user(email, password)
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user
 
 class User(AbstractBaseUser, PermissionsMixin):
-    """Custom user model that uses email instead of username."""
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    date_joined = models.DateTimeField(default=timezone.now)
 
-    objects = CustomUserManager()
+    objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['name']
 
     def __str__(self):
         return self.email
 
 
 
-
 class Account(models.Model):
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    currency = models.CharField(max_length=3, default='NIS')
+    ACCOUNT_TYPES = (
+        ('checking', 'Checking'),
+        ('savings', 'Savings'),
+
+    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="accounts")
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    currency = models.CharField(max_length=3, default="NIS")  # For example, "NIS" for shekels
+    account_type = models.CharField(max_length=50)  # e.g., "Checking", "Savings"
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.user.name} - {self.currency} {self.balance}"
+        return f"{self.user.name} - {self.account_type} - {self.currency}"
 
+    def deposit(self, amount):
+        self.balance += amount
+        self.save()
+
+    def withdraw(self, amount):
+        if self.balance >= amount:
+            self.balance -= amount
+            self.save()
+        else:
+            raise ValueError("Insufficient balance")
 class Transaction(models.Model):
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    TRANSACTION_TYPES = [
+        ('deposit', 'Deposit'),
+        ('withdrawal', 'Withdrawal'),
+        ('transfer', 'Transfer'),
+    ]
+
+    sender_account = models.ForeignKey(
+        'Account', related_name='sent_transactions', null=True, blank=True, on_delete=models.CASCADE
+    )
+    receiver_account = models.ForeignKey(
+        'Account', related_name='received_transactions', null=True, blank=True, on_delete=models.CASCADE
+    )
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    transaction_type = models.CharField(max_length=10)  # e.g. 'credit' or 'debit'
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)  # Define this field if missing
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"{self.transaction_type.capitalize()} of {self.amount} on {self.created_at}"
 class Loan(models.Model):
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
-    repayment_period = models.IntegerField()  # e.g. in months
-    is_paid = models.BooleanField(default=False)
+    term_months = models.IntegerField()
+    start_date = models.DateTimeField(default=timezone.now)
+    paid_off = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Loan of {self.amount} for {self.account.user.name}"
-
+        return f"{self.user.name} - {self.amount} at {self.interest_rate}%"
 
