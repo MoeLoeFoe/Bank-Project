@@ -9,6 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = ('id', 'email', 'name', 'password')
         extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}
+        ref_name = 'UserSerializer'
 
     def create(self, validated_data):
         """Create a new user with encrypted password"""

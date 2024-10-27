@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'account',
     'loan',
     'transaction',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [

@@ -8,6 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'email', 'name')
         read_only_fields = ('id',)
+        ref_name = 'AccountUserSerializer'
 
 class AccountSerializer(serializers.ModelSerializer):
     """Serializer for the account model."""
