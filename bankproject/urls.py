@@ -24,7 +24,7 @@ urlpatterns = [
     path('api/loan/', include(('loan.urls', 'loan'), namespace='loan')),
     path('api/transaction/', include(('transaction.urls', 'transaction'), namespace='transaction')),
 
-    # Swagger UI and JSON schema endpoints
+
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('swagger.json/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
 ]
