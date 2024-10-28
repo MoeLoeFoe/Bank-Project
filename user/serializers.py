@@ -23,3 +23,15 @@ class UserSerializer(serializers.ModelSerializer):
             user.set_password(password)
             user.save()
         return user
+
+    def delete(self, instance):
+        """Soft delete the user by deactivating them if there are no active accounts."""
+        if instance.accounts.filter(is_active=True).exists():
+            raise serializers.ValidationError(
+                "User cannot be deleted while having active accounts."
+            )
+
+        instance.is_active = False
+        instance.save(update_fields=['is_active'])
+
+        return {"detail": "User deactivated successfully."}
