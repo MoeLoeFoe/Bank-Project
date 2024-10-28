@@ -113,6 +113,10 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],}
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # Keeps the default for fallback
+    'bankapp.backends.EmailBackend',  # Custom email backend
+]
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 

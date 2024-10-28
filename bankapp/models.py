@@ -41,7 +41,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Bank(models.Model):
     """Model to represent the bank's total balance."""
-    total_balance = models.FloatField(default=0.00)
+    total_balance = models.FloatField(default=10000000.00)
 
     @classmethod
     def get_instance(cls):

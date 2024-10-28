@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-
+from django.contrib.auth import authenticate
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for the user model."""
@@ -35,3 +35,17 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save(update_fields=['is_active'])
 
         return {"detail": "User deactivated successfully."}
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+        user = authenticate(username=email, password=password)
+
+        if user is None:
+            raise serializers.ValidationError("Invalid email or password")
+
+        data['user'] = user
+        return data
