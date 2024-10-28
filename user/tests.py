@@ -63,7 +63,7 @@ class PrivateUserApiTests(TestCase):
         res = self.client.delete(ME_URL)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
-        # Verify that the user no longer exists
+
         exists = get_user_model().objects.filter(id=self.user.id).exists()
         self.assertFalse(exists)
 

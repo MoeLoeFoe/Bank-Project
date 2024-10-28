@@ -116,7 +116,6 @@ class Account(models.Model):
         self.save(update_fields=['is_active'])
 
 
-from django.core.exceptions import ValidationError
 
 
 class Transaction(models.Model):
@@ -133,25 +132,25 @@ class Transaction(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # Calculate the fee for the transfer
-        self.fee = self.amount * 0.01  # Assuming a 1% transaction fee
 
-        # Ensure that sender and receiver are valid and process the transfer
+        self.fee = self.amount * 0.01
+
+
         if self.transaction_type == 'transfer' and self.sender_account and self.receiver_account:
             if self.sender_account.balance >= self.amount + self.fee:
-                # Deduct from sender and add to receiver
+
                 self.sender_account.balance -= (self.amount + self.fee)
                 self.receiver_account.balance += self.amount
                 self.sender_account.save()
                 self.receiver_account.save()
 
-                # Apply the transaction fee to the bank
+
                 bank = Bank.get_instance()
                 bank.apply_transaction_fee(self.fee)
             else:
                 raise ValueError("Insufficient funds in sender's account for transfer and fee.")
 
-        # Call the original save() to ensure the transaction is recorded
+
         super().save(*args, **kwargs)
 
     def __str__(self):
